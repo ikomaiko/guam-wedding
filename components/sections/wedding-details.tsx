@@ -77,18 +77,12 @@ export function WeddingDetails() {
             <div className="space-y-6">
               <div>
                 <div className="event__type text-lg mb-2">挙式</div>
-                <div className="event__time text-base">
-                  12時00分
-                  <span className="text-sm ml-2">(受付 11時30分)</span>
-                </div>
+                <div className="event__time text-base">10時30分</div>
               </div>
 
               <div>
-                <div className="event__type text-lg mb-2">披露宴</div>
-                <div className="event__time text-base">
-                  13時00分
-                  <span className="text-sm ml-2">(受付 12時30分)</span>
-                </div>
+                <div className="event__type text-lg mb-2">会食</div>
+                <div className="event__time text-base">12時00分</div>
               </div>
 
               <div className="pt-6 border-t border-[#897640]/20">
