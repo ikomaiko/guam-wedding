@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Plus, MapPin, ChevronDown, ChevronUp, Trash2 } from "lucide-react";
+import { Plus, MapPin, ChevronDown, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -20,12 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useAuth } from "@/contexts/auth-context";
 import type { TimelineEvent, Visibility } from "@/types/app";
 
@@ -37,10 +32,10 @@ interface TimelineProps {
 
 export function Timeline({ events, onAddEvent, onDeleteEvent }: TimelineProps) {
   const { user } = useAuth();
-  const [isExpanded, setIsExpanded] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [eventToDelete, setEventToDelete] = useState<string | null>(null);
+  const [showAllDates, setShowAllDates] = useState(false);
   const [newEvent, setNewEvent] = useState({
     date: "",
     time: "",
@@ -48,6 +43,36 @@ export function Timeline({ events, onAddEvent, onDeleteEvent }: TimelineProps) {
     location: "",
     visibility: "public" as Visibility,
   });
+
+  // イベントを日付でグループ化
+  const groupedEvents = useMemo(() => {
+    const sorted = [...events].sort(
+      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+    );
+
+    return sorted.reduce((groups, event) => {
+      const date = new Date(event.date).toLocaleDateString("ja-JP", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+      });
+
+      if (!groups[date]) {
+        groups[date] = {
+          新郎側: [],
+          新婦側: [],
+        };
+      }
+      groups[date][event.side].push(event);
+      return groups;
+    }, {} as Record<string, Record<"新郎側" | "新婦側", TimelineEvent[]>>);
+  }, [events]);
+
+  // 表示する日付を制限
+  const displayDates = useMemo(() => {
+    const dates = Object.entries(groupedEvents);
+    return showAllDates ? dates : dates.slice(0, 2);
+  }, [groupedEvents, showAllDates]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -86,14 +111,6 @@ export function Timeline({ events, onAddEvent, onDeleteEvent }: TimelineProps) {
     }
   };
 
-  const formatDate = (date: string) => {
-    return new Date(date).toLocaleDateString("ja-JP", {
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-    });
-  };
-
   const formatTime = (date: string) => {
     return new Date(date).toLocaleTimeString("ja-JP", {
       hour: "2-digit",
@@ -101,33 +118,20 @@ export function Timeline({ events, onAddEvent, onDeleteEvent }: TimelineProps) {
     });
   };
 
-  const renderTimelineEvents = (side: "新郎側" | "新婦側") => {
-    const sideEvents = events.filter((event) => event.side === side);
-    const eventsToShow = isExpanded ? sideEvents : sideEvents.slice(0, 3);
-
-    return eventsToShow.map((event, index) => (
-      <motion.div
-        key={event.id}
-        className={`relative ${side === "新郎側" ? "pr-8 text-right" : "pl-8"}`}
-        initial={{ opacity: 0, x: side === "新郎側" ? -20 : 20 }}
-        whileInView={{ opacity: 1, x: 0 }}
-        viewport={{ once: true }}
-        transition={{ delay: index * 0.2 }}
-      >
-        <div className="absolute top-0 h-full">
-          <div className="h-full border-l-2 border-primary"></div>
-          <div className="absolute top-6 w-3 h-3 rounded-full bg-primary transform -translate-x-1.5"></div>
-          <div className="absolute top-2 text-sm text-muted-foreground whitespace-nowrap">
-            {formatDate(event.date)}
-          </div>
-          <div className="absolute top-6 text-sm text-muted-foreground whitespace-nowrap">
-            {formatTime(event.date)}
-          </div>
-        </div>
+  const renderEvent = (event: TimelineEvent, side: "新郎側" | "新婦側") => (
+    <motion.div
+      key={event.id}
+      className={`relative ${side === "新郎側" ? "text-right" : "text-left"}`}
+      initial={{ opacity: 0, x: side === "新郎側" ? -20 : 20 }}
+      whileInView={{ opacity: 1, x: 0 }}
+      viewport={{ once: true }}
+    >
+      <div className="space-y-2">
+        {/* タイトル */}
         <div
           className={`flex items-center gap-2 ${
             side === "新郎側" ? "justify-end" : "justify-start"
-          } mt-16`}
+          }`}
         >
           {side === "新郎側" ? (
             <>
@@ -141,11 +145,11 @@ export function Timeline({ events, onAddEvent, onDeleteEvent }: TimelineProps) {
                   <Trash2 className="h-4 w-4 text-red-500" />
                 </Button>
               )}
-              <h4 className="font-medium">{event.title}</h4>
+              <h4 className="font-medium text-lg">{event.title}</h4>
             </>
           ) : (
             <>
-              <h4 className="font-medium">{event.title}</h4>
+              <h4 className="font-medium text-lg">{event.title}</h4>
               {event.created_by === user?.id && onDeleteEvent && (
                 <Button
                   variant="ghost"
@@ -159,6 +163,13 @@ export function Timeline({ events, onAddEvent, onDeleteEvent }: TimelineProps) {
             </>
           )}
         </div>
+
+        {/* 時間 */}
+        <div className="text-sm text-muted-foreground">
+          {formatTime(event.date)}
+        </div>
+
+        {/* 場所 */}
         <div
           className={`flex items-center gap-1 text-muted-foreground ${
             side === "新郎側" ? "justify-end" : "justify-start"
@@ -176,15 +187,15 @@ export function Timeline({ events, onAddEvent, onDeleteEvent }: TimelineProps) {
             </>
           )}
         </div>
-      </motion.div>
-    ));
-  };
+      </div>
+    </motion.div>
+  );
 
   return (
     <section className="py-20 bg-[#f8f5f2]" id="timeline">
       <div className="container mx-auto px-4">
         <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-8">
+          <div className="text-center">
             <h2 className="text-3xl font-serif mb-4">タイムライン</h2>
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <DialogTrigger asChild>
@@ -269,47 +280,65 @@ export function Timeline({ events, onAddEvent, onDeleteEvent }: TimelineProps) {
             </Dialog>
           </div>
 
-          <div className="relative grid grid-cols-2 gap-8">
-            {/* 新郎側 */}
-            <div className="space-y-8">
-              <h3 className="text-xl font-serif text-center mb-8">新郎側</h3>
-              {renderTimelineEvents("新郎側")}
-            </div>
-
-            {/* 中央の線 */}
-            <div className="absolute left-1/2 transform -translate-x-1/2 h-full border-l-2 border-primary" />
-
-            {/* 新婦側 */}
-            <div className="space-y-8">
-              <h3 className="text-xl font-serif text-center mb-8">新婦側</h3>
-              {renderTimelineEvents("新婦側")}
-            </div>
+          <div className="grid grid-cols-2 gap-8 relative top-[60px]">
+            <h3 className="text-xl font-serif text-center ">新郎側</h3>
+            <h3 className="text-xl font-serif text-center ">新婦側</h3>
           </div>
 
-          {/* 中央の線の下にドロップダウンボタンを配置 */}
           <div className="relative">
-            <div className="absolute left-1/2 transform -translate-x-1/2 w-full max-w-[200px] text-center mt-8">
-              <Collapsible open={isExpanded} onOpenChange={setIsExpanded}>
-                <CollapsibleTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    className="flex items-center gap-2 mx-auto"
-                  >
-                    {isExpanded ? (
-                      <>
-                        <ChevronUp className="h-4 w-4" />
-                        <span>閉じる</span>
-                      </>
-                    ) : (
-                      <>
-                        <ChevronDown className="h-4 w-4" />
-                        <span>すべて表示</span>
-                      </>
+            {/* 中央の軸 */}
+            <div className="absolute left-1/2 top-0 bottom-0 w-px bg-primary/30 transform -translate-x-1/2" />
+
+            {/* 日付ごとのイベント */}
+            {displayDates.map(([date, sides], index) => (
+              <div key={date} className="">
+                {" "}
+                {/* mb-16から変更 */}
+                {/* 日付ラベル */}
+                <div className="relative mb-24">
+                  {" "}
+                  {/* mb-16から変更 */}
+                  <div className="absolute left-1/2 transform -translate-x-1/2">
+                    <div className="bg-[#f8f5f2] px-4 py-2 rounded-full border border-primary/30">
+                      <div className="text-lg font-medium text-primary">
+                        {date}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                {/* イベント */}
+                <div className="grid grid-cols-2 gap-8 relative top-[60px]">
+                  <div className="space-y-8 pr-2">
+                    {" "}
+                    {/* space-y-12から変更 */}
+                    {sides["新郎側"].map((event) =>
+                      renderEvent(event, "新郎側")
                     )}
-                  </Button>
-                </CollapsibleTrigger>
-              </Collapsible>
-            </div>
+                  </div>
+                  <div className="space-y-8 pl-8">
+                    {" "}
+                    {/* space-y-12から変更 */}
+                    {sides["新婦側"].map((event) =>
+                      renderEvent(event, "新婦側")
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
+
+            {/* もっと見るボタン */}
+            {Object.keys(groupedEvents).length > 2 && (
+              <div className="text-center mt-8 relative top-[40px]">
+                <Button
+                  variant="outline"
+                  onClick={() => setShowAllDates(!showAllDates)}
+                  className="gap-2"
+                >
+                  <ChevronDown className="h-4 w-4" />
+                  {showAllDates ? "閉じる" : "もっと見る"}
+                </Button>
+              </div>
+            )}
           </div>
         </div>
       </div>

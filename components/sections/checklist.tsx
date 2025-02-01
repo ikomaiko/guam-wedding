@@ -44,11 +44,11 @@ import type {
 } from "@/types/app";
 
 interface ChecklistProps {
-  items: ChecklistItemWithState[]; // ChecklistItem[] から変更
+  items: ChecklistItemWithState[];
   onToggleComplete: (id: string) => void;
   onAddItem: (
     item: Pick<ChecklistItem, "content" | "due_type" | "visibility">
-  ) => void; // 型を簡略化
+  ) => void;
   onDeleteItem?: (id: string) => void;
 }
 
@@ -121,7 +121,7 @@ export function Checklist({
       <CardContent className="flex items-center p-4">
         <Checkbox
           id={`task-${item.id}`}
-          checked={item.is_completed} // isCompletedからis_completedに変更
+          checked={item.is_completed}
           onCheckedChange={() => onToggleComplete(item.id)}
           className="mr-4"
         />
@@ -177,7 +177,7 @@ export function Checklist({
     const totalTasks = publicTasks.length;
     const completedTasks = publicTasks.filter(
       (item) => item.is_completed && item.user_id === userId
-    ).length; // isCompleted から is_completed に、userId から user_id に変更
+    ).length;
     return `${completedTasks}/${totalTasks}`;
   };
 
@@ -192,7 +192,7 @@ export function Checklist({
     <section className="py-20 bg-[#f8f5f2]">
       <div className="container mx-auto px-4">
         <div className="max-w-4xl mx-auto">
-          <div className="flex justify-between items-center mb-8">
+          <div className="text-center space-y-4 mb-12">
             <h2 className="text-3xl font-serif">チェックリスト</h2>
             <Dialog open={isTaskDialogOpen} onOpenChange={setIsTaskDialogOpen}>
               <DialogTrigger asChild>
@@ -269,14 +269,14 @@ export function Checklist({
             <TabsContent value="week_before">
               <div className="space-y-4">
                 {items
-                  .filter((item) => item.due_type === "week_before") // dueType から due_type に変更
+                  .filter((item) => item.due_type === "week_before")
                   .map(renderChecklistItem)}
               </div>
             </TabsContent>
             <TabsContent value="day_before">
               <div className="space-y-4">
                 {items
-                  .filter((item) => item.due_type === "day_before") // dueType から due_type に変更
+                  .filter((item) => item.due_type === "day_before")
                   .map(renderChecklistItem)}
               </div>
             </TabsContent>
