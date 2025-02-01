@@ -2,27 +2,20 @@
 
 import { motion } from "framer-motion";
 
-interface HeroProps {
-  scrollY: number;
-}
+interface HeroProps {}
 
-export function Hero({ scrollY }: HeroProps) {
+export function Hero() {
   return (
-    <motion.section 
+    <motion.section
       className="h-screen relative overflow-hidden"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 1 }}
     >
-      <div 
-        className="absolute inset-0 bg-[url('/IMG_7138.JPG')] bg-cover bg-center"
-        style={{
-          transform: `translateY(${scrollY * 0.5}px)`,
-        }}
-      />
+      <div className="absolute inset-0 bg-[url('/IMG_7138.JPG')] bg-cover bg-center" />
       <div className="absolute inset-0 bg-black/30" />
       <div className="absolute inset-0 flex flex-col items-center justify-center text-white">
-        <motion.h1 
+        <motion.h1
           className="text-6xl font-serif mb-4"
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
@@ -30,7 +23,7 @@ export function Hero({ scrollY }: HeroProps) {
         >
           Daiki & Hiroka
         </motion.h1>
-        <motion.p 
+        <motion.p
           className="text-xl"
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
@@ -39,7 +32,7 @@ export function Hero({ scrollY }: HeroProps) {
           2025.02.08 Sat
         </motion.p>
       </div>
-      <motion.div 
+      <motion.div
         className="absolute bottom-10 left-1/2 transform -translate-x-1/2"
         animate={{ y: [0, 10, 0] }}
         transition={{ duration: 1.5, repeat: Infinity }}
