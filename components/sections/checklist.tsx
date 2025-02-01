@@ -230,7 +230,7 @@ export function Checklist({
                         <SelectValue placeholder="実行タイミングを選択" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="week_before">1週間前</SelectItem>
+                        <SelectItem value="week_before">3日前</SelectItem>
                         <SelectItem value="day_before">前日</SelectItem>
                       </SelectContent>
                     </Select>
@@ -263,7 +263,7 @@ export function Checklist({
 
           <Tabs defaultValue="week_before" className="w-full">
             <TabsList className="grid w-full grid-cols-2 mb-8">
-              <TabsTrigger value="week_before">1週間前</TabsTrigger>
+              <TabsTrigger value="week_before">5日前</TabsTrigger>
               <TabsTrigger value="day_before">前日</TabsTrigger>
             </TabsList>
             <TabsContent value="week_before">
