@@ -7,6 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent } from "@/components/ui/card";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/auth-context";
+import { NavigationBar } from "@/components/navigation-bar";
 
 interface GuestWithProfile {
   id: string;
@@ -28,7 +29,8 @@ export default function GuestsPage() {
     const fetchGuests = async () => {
       const { data, error } = await supabase
         .from("guests")
-        .select(`
+        .select(
+          `
           id,
           name,
           type,
@@ -37,7 +39,8 @@ export default function GuestsPage() {
             avatar_url,
             location
           )
-        `)
+        `
+        )
         .order("side")
         .order("type")
         .order("name");
@@ -47,10 +50,12 @@ export default function GuestsPage() {
         return;
       }
 
-      setGuests(data.map(guest => ({
-        ...guest,
-        profile: guest.guest_profiles?.[0] || null
-      })));
+      setGuests(
+        data.map((guest) => ({
+          ...guest,
+          profile: guest.guest_profiles?.[0] || null,
+        }))
+      );
       setIsLoading(false);
     };
 
@@ -69,14 +74,14 @@ export default function GuestsPage() {
     <div className="min-h-screen bg-[#f8f5f2] p-8">
       <div className="max-w-4xl mx-auto">
         <h1 className="text-3xl font-serif mb-8">参列者一覧</h1>
-        
+
         <div className="grid gap-8">
-          {["新郎側", "新婦側"].map(side => (
+          {["新郎側", "新婦側"].map((side) => (
             <div key={side}>
               <h2 className="text-2xl font-serif mb-4">{side}</h2>
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {guests
-                  .filter(guest => guest.side === side)
+                  .filter((guest) => guest.side === side)
                   .map((guest, index) => (
                     <motion.div
                       key={guest.id}
@@ -89,12 +94,18 @@ export default function GuestsPage() {
                           <CardContent className="p-6">
                             <div className="flex items-center gap-4">
                               <Avatar className="h-12 w-12">
-                                <AvatarImage src={guest.profile?.avatar_url || undefined} />
-                                <AvatarFallback>{getInitials(guest.name)}</AvatarFallback>
+                                <AvatarImage
+                                  src={guest.profile?.avatar_url || undefined}
+                                />
+                                <AvatarFallback>
+                                  {getInitials(guest.name)}
+                                </AvatarFallback>
                               </Avatar>
                               <div>
                                 <div className="font-medium">{guest.name}</div>
-                                <div className="text-sm text-muted-foreground">{guest.type}</div>
+                                <div className="text-sm text-muted-foreground">
+                                  {guest.type}
+                                </div>
                                 {guest.profile?.location && (
                                   <div className="text-sm text-muted-foreground mt-1">
                                     📍 {guest.profile.location}
@@ -112,6 +123,7 @@ export default function GuestsPage() {
           ))}
         </div>
       </div>
+      {/* <NavigationBar /> */}
     </div>
   );
 }

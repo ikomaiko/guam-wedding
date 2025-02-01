@@ -1,14 +1,13 @@
 export type DueType = "week_before" | "day_before";
-export type Family = "ikoma" | "onohara";
 export type Visibility = "private" | "family" | "public";
 
 export interface ChecklistItem {
   id: string;
   content: string;
-  due_type?: DueType; // stringからDueTypeに変更
+  due_type?: DueType;
   link?: string;
-  visibility: Visibility; // stringからVisibilityに変更
-  created_at: string; // createdAtからcreated_atに変更
+  visibility: Visibility;
+  created_at: string;
 }
 
 export interface ChecklistState {
@@ -30,20 +29,28 @@ export interface TimelineEvent {
   title: string;
   location: string;
   visibility: Visibility;
-  user_id: string; // userIdからuser_idに変更
-  family: Family; // オプショナルを削除し、必須プロパティに変更
-  created_at: string; // createdAtからcreated_atに変更
+  user_id: string;
+  side: GuestSide;
+  created_at: string;
 }
 
 export type GuestType =
+  | "父"
+  | "母"
   | "新郎本人"
   | "新婦本人"
+  | "祖父"
+  | "祖母"
+  | "兄"
+  | "姪"
+  | "甥"
   | "親"
   | "兄弟姉妹"
   | "親族"
   | "友人"
-  | "同僒"
+  | "同僚"
   | "その他";
+
 export type GuestSide = "新郎側" | "新婦側";
 
 export interface Guest {

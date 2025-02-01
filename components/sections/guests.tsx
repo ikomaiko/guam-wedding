@@ -6,12 +6,14 @@ import { motion } from "framer-motion";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent } from "@/components/ui/card";
 import { supabase } from "@/lib/supabase";
+import { sortByGuestType } from "@/lib/utils";
+import type { Guest } from "@/types/app";
 
 interface GuestWithProfile {
   id: string;
   name: string;
-  type: string;
-  side: string;
+  type: Guest["type"];
+  side: Guest["side"];
   profile?: {
     avatar_url: string | null;
     location: string | null;
@@ -35,20 +37,22 @@ export function Guests() {
             avatar_url,
             location
           )
-        `)
-        .order("side")
-        .order("type")
-        .order("name");
+        `);
 
       if (error) {
         console.error("Error fetching guests:", error);
         return;
       }
 
-      setGuests(data.map(guest => ({
-        ...guest,
-        profile: guest.guest_profiles?.[0] || null
-      })));
+      // Sort guests by type using the sortByGuestType utility
+      const sortedGuests = data
+        .map(guest => ({
+          ...guest,
+          profile: guest.guest_profiles?.[0] || null
+        }))
+        .sort((a, b) => sortByGuestType(a.type) - sortByGuestType(b.type));
+
+      setGuests(sortedGuests);
       setIsLoading(false);
     };
 

@@ -3,13 +3,14 @@
 import { useEffect, useState } from "react";
 import { Hero } from "@/components/sections/hero";
 import { WeddingDetails } from "@/components/sections/wedding-details";
+import { Guests } from "@/components/sections/guests";
 import { Checklist } from "@/components/sections/checklist";
 import { Timeline } from "@/components/sections/timeline";
 import { Countdown } from "@/components/sections/countdown";
 import { Navigation } from "@/components/navigation";
 import { useChecklistSupabase } from "@/hooks/use-checklist-supabase";
 import { useTimelineSupabase } from "@/hooks/use-timeline-supabase";
-import { useAuth } from "@/contexts/auth-context"; // パスを修正
+import { useAuth } from "@/contexts/auth-context";
 import { redirect } from "next/navigation";
 
 function PageContent() {
@@ -29,9 +30,6 @@ function PageContent() {
   } = useTimelineSupabase();
   const sortedEvents = getAllEventsSorted();
 
-  console.log("checklistItems", checklistItems);
-  console.log("timelineEvents", timelineEvents);
-
   useEffect(() => {
     const handleScroll = () => {
       setScrollY(window.scrollY);
@@ -47,7 +45,6 @@ function PageContent() {
     (weddingDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
   );
 
-  // ログインしていない場合はログインページにリダイレクト
   if (!user) {
     redirect("/login");
   }
@@ -56,6 +53,7 @@ function PageContent() {
     <main className="relative pb-20">
       <Hero scrollY={scrollY} />
       <WeddingDetails />
+      <Guests />
       <Timeline
         events={sortedEvents}
         onAddEvent={addEvent}
