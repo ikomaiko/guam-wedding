@@ -72,7 +72,8 @@ export function ProfileDrawer() {
           )
         `
         )
-        .in("type", ["新郎本人", "新婦本人"]);
+        .in("type", ["新郎本人", "新婦本人"])
+        .order("id", { ascending: false });
 
       if (profilesError) throw profilesError;
       // @ts-ignore

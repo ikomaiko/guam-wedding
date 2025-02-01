@@ -187,9 +187,20 @@ export default function WelcomePage() {
             </DialogTitle>
           </DialogHeader>
           <div className="text-center space-y-4">
-            <p>グアムまでお越しいただけること誠にありがとうございます。</p>
             <p>
-              お互いのことがもっと知れるよう、ぜひこちらの質問にお答えください！
+              グアムまでお越しいただけること
+              <br />
+              誠にありがとうございます。
+            </p>
+            <p>
+              大好きな家族と過ごせるグアム旅行
+              <br />
+              夫婦共々心から楽しみにしています。
+            </p>
+            <p>
+              お互いのことがもっと知れるよう
+              <br />
+              ぜひ質問にお答えください！
             </p>
             <Button onClick={() => setIsModalOpen(false)}>はじめる</Button>
           </div>
