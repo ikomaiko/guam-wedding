@@ -14,23 +14,25 @@ export function Hero() {
     >
       <div className="absolute inset-0 bg-[url('/IMG_7138.JPG')] bg-cover bg-center" />
       <div className="absolute inset-0 bg-black/30" />
-      <div className="absolute inset-0 flex flex-col items-center justify-center text-white">
-        <motion.h1
-          className="text-6xl font-serif mb-4"
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.5 }}
-        >
-          Daiki & Hiroka
-        </motion.h1>
-        <motion.p
-          className="text-xl"
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.7 }}
-        >
-          2025.02.08 Sat
-        </motion.p>
+      <div className="absolute inset-0 flex flex-col justify-center container mx-auto px-4">
+        <div className="max-w-4xl -mt-48">
+          <motion.h1
+            className="text-6xl font-serif mb-4 text-white"
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.5 }}
+          >
+            Daiki & Hiroka
+          </motion.h1>
+          <motion.p
+            className="text-xl text-white"
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.7 }}
+          >
+            2025.02.08 Sat
+          </motion.p>
+        </div>
       </div>
       <motion.div
         className="absolute bottom-10 left-1/2 transform -translate-x-1/2"
