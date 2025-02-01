@@ -1,0 +1,165 @@
+"use client";
+
+import { useState } from "react";
+import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerDescription,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from "@/components/ui/drawer";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { supabase } from "@/lib/supabase";
+import { useToast } from "@/hooks/use-toast";
+
+const QUESTIONS = [
+  { key: "location", label: "どこに住んでる？" },
+  { key: "favorite_food", label: "好きな食べ物は？" },
+  { key: "favorite_drink", label: "好きな飲み物は？" },
+  { key: "holiday_activity", label: "休みの日は何してる？" },
+  { key: "favorite_celebrity", label: "好きな芸能人は？" },
+  { key: "impression", label: "新郎（新婦）の印象は？" },
+  { key: "dream", label: "叶えたいことは？" },
+  { key: "memory", label: "一番の思い出は？" },
+  { key: "guam_plan", label: "グアムでしたいことは？" },
+];
+
+interface ProfileData {
+  id: string;
+  name: string;
+  type: string;
+  side: string;
+  guest_profiles: Array<{
+    avatar_url: string | null;
+  }>;
+  guest_qa: Array<{
+    question_key: string;
+    answer: string;
+  }>;
+}
+
+export function ProfileDrawer() {
+  const [isOpen, setIsOpen] = useState(false);
+  const [profiles, setProfiles] = useState<ProfileData[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
+
+  const fetchProfiles = async () => {
+    setIsLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from("guests")
+        .select(`
+          id,
+          name,
+          type,
+          side,
+          guest_profiles (
+            avatar_url
+          ),
+          guest_qa (
+            question_key,
+            answer
+          )
+        `)
+        .in("type", ["新郎本人", "新婦本人"]);
+
+      if (error) throw error;
+      if (data) {
+        setProfiles(data);
+      }
+    } catch (error) {
+      console.error("Error fetching profiles:", error);
+      toast({
+        title: "エラー",
+        description: "プロフィールの取得に失敗しました",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const getInitials = (name: string) => {
+    return name.slice(0, 2);
+  };
+
+  const getAnswer = (profile: ProfileData, key: string) => {
+    return profile.guest_qa?.find((qa) => qa.question_key === key)?.answer || "未回答";
+  };
+
+  const getAvatarUrl = (profile: ProfileData) => {
+    return profile.guest_profiles?.[0]?.avatar_url || undefined;
+  };
+
+  return (
+    <Drawer open={isOpen} onOpenChange={setIsOpen}>
+      <DrawerTrigger asChild>
+        <Button
+          variant="outline"
+          className="w-full"
+          onClick={() => {
+            fetchProfiles();
+            setIsOpen(true);
+          }}
+        >
+          新郎新婦の回答を見る
+        </Button>
+      </DrawerTrigger>
+      <DrawerContent>
+        <div className="mx-auto w-full max-w-sm">
+          <DrawerHeader>
+            <DrawerTitle className="text-center">新郎新婦のプロフィール</DrawerTitle>
+            <DrawerDescription className="text-center">
+              お二人の回答をご覧ください
+            </DrawerDescription>
+          </DrawerHeader>
+          <div className="p-4 pb-8">
+            {isLoading ? (
+              <div className="text-center py-4">読み込み中...</div>
+            ) : (
+              <div className="space-y-12">
+                {profiles.map((profile) => (
+                  <div key={profile.id} className="space-y-6">
+                    <div className="flex items-center gap-4">
+                      <Avatar className="h-16 w-16">
+                        <AvatarImage src={getAvatarUrl(profile)} />
+                        <AvatarFallback className="text-xl">
+                          {getInitials(profile.name)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <div className="font-medium text-lg">{profile.name}</div>
+                        <div className="text-sm text-muted-foreground">
+                          {profile.side} / {profile.type}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="space-y-4 border-t pt-4">
+                      {QUESTIONS.map((q) => (
+                        <div key={q.key} className="space-y-1">
+                          <div className="text-sm font-medium">{q.label}</div>
+                          <div className="text-sm text-muted-foreground whitespace-pre-wrap">
+                            {getAnswer(profile, q.key)}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+          <div className="p-4 text-center">
+            <DrawerClose asChild>
+              <Button variant="outline">閉じる</Button>
+            </DrawerClose>
+          </div>
+        </div>
+      </DrawerContent>
+    </Drawer>
+  );
+}

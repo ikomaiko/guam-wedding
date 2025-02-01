@@ -37,32 +37,61 @@ export const useLoginSupabase = () => {
   };
 
   const handleLogin = async () => {
-    const { data: user, error } = await supabase
-      .from("guests")
-      .select("id, name, side, type") // パスワード以外の情報を取得
-      .eq("name", formData.name)
-      .eq("password", formData.password)
-      .single();
+    try {
+      if (!formData.name || !formData.password) {
+        toast({
+          title: "ログインエラー",
+          description: "名前とパスワードを入力してください",
+          variant: "destructive",
+        });
+        return false;
+      }
 
-    if (error) {
+      // First get the guest by name
+      const { data: guestByName, error: nameError } = await supabase
+        .from("guests")
+        .select("id, name, side, type, password")
+        .eq("name", formData.name)
+        .maybeSingle();
+
+      if (!guestByName) {
+        toast({
+          title: "ログインエラー",
+          description: "ユーザーが見つかりません",
+          variant: "destructive",
+        });
+        return false;
+      }
+
+      // Check password
+      if (guestByName.password !== formData.password) {
+        toast({
+          title: "ログインエラー",
+          description: "パスワードが正しくありません",
+          variant: "destructive",
+        });
+        return false;
+      }
+
+      // Login successful
+      const { password, ...userWithoutPassword } = guestByName;
+      setUser(userWithoutPassword);
+      
       toast({
-        title: "エラー",
-        description: "ログインに失敗しました",
+        title: "ログイン成功",
+        description: `ようこそ、${guestByName.name}さん`,
+      });
+      return true;
+
+    } catch (error) {
+      console.error("Login error:", error);
+      toast({
+        title: "ログインエラー",
+        description: "ログイン処理中にエラーが発生しました",
         variant: "destructive",
       });
       return false;
     }
-
-    if (user) {
-      setUser(user); // AuthContextに保存
-      toast({
-        title: "ログイン成功",
-        description: `ようこそ、${user.name}さん`,
-      });
-      return true;
-    }
-
-    return false;
   };
 
   const updateFormData = (field: keyof typeof formData, value: string) => {

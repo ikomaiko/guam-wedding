@@ -29,6 +29,9 @@ function PageContent() {
   } = useTimelineSupabase();
   const sortedEvents = getAllEventsSorted();
 
+  console.log("checklistItems", checklistItems);
+  console.log("timelineEvents", timelineEvents);
+
   useEffect(() => {
     const handleScroll = () => {
       setScrollY(window.scrollY);
@@ -43,6 +46,11 @@ function PageContent() {
   const timeLeft = Math.ceil(
     (weddingDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
   );
+
+  // ログインしていない場合はログインページにリダイレクト
+  if (!user) {
+    redirect("/login");
+  }
 
   return (
     <main className="relative pb-20">

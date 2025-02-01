@@ -1,6 +1,6 @@
-// pages/login.tsx
 "use client";
 
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import {
@@ -14,16 +14,24 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useLoginSupabase } from "@/hooks/use-login-supabase";
+import { useAuth } from "@/contexts/auth-context";
 
 export default function LoginPage() {
   const router = useRouter();
+  const { user } = useAuth();
   const { guests, formData, updateFormData, handleLogin } = useLoginSupabase();
+
+  useEffect(() => {
+    if (user) {
+      router.push("/welcome");
+    }
+  }, [user, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const user = await handleLogin();
-    if (user) {
-      router.push("/");
+    const success = await handleLogin();
+    if (success) {
+      router.push("/welcome");
     }
   };
 

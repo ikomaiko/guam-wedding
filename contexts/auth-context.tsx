@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useState, useEffect } from "react";
 import { Guest } from "@/types/app";
 import Cookies from "js-cookie";
 
@@ -15,19 +15,28 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | null>(null);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<AuthUser | null>(() => {
-    if (typeof window !== "undefined") {
-      const saved = Cookies.get("auth-user");
-      return saved ? JSON.parse(saved) : null;
+  const [user, setUser] = useState<AuthUser | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    // Check for saved user data in cookies on initial load
+    const savedUser = Cookies.get("auth-user");
+    if (savedUser) {
+      try {
+        setUser(JSON.parse(savedUser));
+      } catch (error) {
+        console.error("Error parsing saved user:", error);
+        Cookies.remove("auth-user");
+      }
     }
-    return null;
-  });
+    setIsLoading(false);
+  }, []);
 
   const handleSetUser = (newUser: AuthUser | null) => {
     setUser(newUser);
     if (newUser) {
-      // 7日間の有効期限を設定
-      Cookies.set("auth-user", JSON.stringify(newUser), { expires: 30 });
+      // Set cookie with 7 days expiration
+      Cookies.set("auth-user", JSON.stringify(newUser), { expires: 7 });
     } else {
       Cookies.remove("auth-user");
     }
@@ -37,6 +46,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(null);
     Cookies.remove("auth-user");
   };
+
+  if (isLoading) {
+    return null; // Or a loading spinner
+  }
 
   return (
     <AuthContext.Provider value={{ user, setUser: handleSetUser, logout }}>

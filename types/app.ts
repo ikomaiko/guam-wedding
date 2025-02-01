@@ -31,8 +31,8 @@ export interface TimelineEvent {
   location: string;
   visibility: Visibility;
   user_id: string; // userIdからuser_idに変更
+  family: Family; // オプショナルを削除し、必須プロパティに変更
   created_at: string; // createdAtからcreated_atに変更
-  family?: Family; // familyプロパティを追加
 }
 
 export type GuestType =

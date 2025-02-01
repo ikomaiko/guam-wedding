@@ -1,26 +1,63 @@
 "use client";
 
-import { Plus, ExternalLink, ChevronDown, ChevronUp, Trash2 } from "lucide-react";
+import {
+  Plus,
+  ExternalLink,
+  ChevronDown,
+  ChevronUp,
+  Trash2,
+} from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import { useState, useEffect } from "react";
-import { supabase } from '@/lib/supabase';
-import type { ChecklistItem, ChecklistItemWithState, DueType, Visibility, Guest } from "@/types/app";
+import { supabase } from "@/lib/supabase";
+import type {
+  ChecklistItem,
+  ChecklistItemWithState,
+  DueType,
+  Visibility,
+  Guest,
+} from "@/types/app";
 
 interface ChecklistProps {
   items: ChecklistItemWithState[]; // ChecklistItem[] から変更
   onToggleComplete: (id: string) => void;
-  onAddItem: (item: Pick<ChecklistItem, 'content' | 'due_type' | 'visibility'>) => void; // 型を簡略化
+  onAddItem: (
+    item: Pick<ChecklistItem, "content" | "due_type" | "visibility">
+  ) => void; // 型を簡略化
   onDeleteItem?: (id: string) => void;
 }
 
-export function Checklist({ items, onToggleComplete, onAddItem, onDeleteItem }: ChecklistProps) {
+export function Checklist({
+  items,
+  onToggleComplete,
+  onAddItem,
+  onDeleteItem,
+}: ChecklistProps) {
   const [isTaskDialogOpen, setIsTaskDialogOpen] = useState(false);
   const [isProgressExpanded, setIsProgressExpanded] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -28,7 +65,7 @@ export function Checklist({ items, onToggleComplete, onAddItem, onDeleteItem }: 
   const [newTask, setNewTask] = useState({
     content: "",
     dueType: "week_before" as DueType,
-    visibility: "public" as Visibility
+    visibility: "public" as Visibility,
   });
   const [guests, setGuests] = useState<Guest[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -36,12 +73,12 @@ export function Checklist({ items, onToggleComplete, onAddItem, onDeleteItem }: 
   useEffect(() => {
     const fetchGuests = async () => {
       const { data, error } = await supabase
-        .from('guests')
-        .select('*')
-        .order('id');
+        .from("guests")
+        .select("*")
+        .order("id");
 
       if (error) {
-        console.error('Error fetching guests:', error);
+        console.error("Error fetching guests:", error);
         return;
       }
 
@@ -59,7 +96,7 @@ export function Checklist({ items, onToggleComplete, onAddItem, onDeleteItem }: 
     onAddItem({
       content: newTask.content,
       due_type: newTask.dueType,
-      visibility: newTask.visibility
+      visibility: newTask.visibility,
     });
 
     setNewTask({ content: "", dueType: "week_before", visibility: "public" });
@@ -99,7 +136,7 @@ export function Checklist({ items, onToggleComplete, onAddItem, onDeleteItem }: 
               <label
                 htmlFor={`task-${item.id}`}
                 className={`text-sm font-medium ${
-                  item.is_completed 
+                  item.is_completed
                     ? "line-through text-muted-foreground"
                     : "text-blue-600 underline"
                 }`}
@@ -118,7 +155,7 @@ export function Checklist({ items, onToggleComplete, onAddItem, onDeleteItem }: 
               >
                 {item.content}
               </label>
-              {item.user_id === '1' && onDeleteItem && (
+              {item.user_id === "1" && onDeleteItem && (
                 <Button
                   variant="ghost"
                   size="sm"
@@ -136,9 +173,11 @@ export function Checklist({ items, onToggleComplete, onAddItem, onDeleteItem }: 
   );
 
   const calculateProgress = (userId: string) => {
-    const publicTasks = items.filter(item => item.visibility === 'public');
+    const publicTasks = items.filter((item) => item.visibility === "public");
     const totalTasks = publicTasks.length;
-    const completedTasks = publicTasks.filter(item => item.is_completed && item.user_id === userId).length; // isCompleted から is_completed に、userId から user_id に変更
+    const completedTasks = publicTasks.filter(
+      (item) => item.is_completed && item.user_id === userId
+    ).length; // isCompleted から is_completed に、userId から user_id に変更
     return `${completedTasks}/${totalTasks}`;
   };
 
@@ -171,15 +210,21 @@ export function Checklist({ items, onToggleComplete, onAddItem, onDeleteItem }: 
                     <label className="text-sm font-medium">タスク内容</label>
                     <Input
                       value={newTask.content}
-                      onChange={(e) => setNewTask({ ...newTask, content: e.target.value })}
+                      onChange={(e) =>
+                        setNewTask({ ...newTask, content: e.target.value })
+                      }
                       required
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-sm font-medium">実行タイミング</label>
+                    <label className="text-sm font-medium">
+                      実行タイミング
+                    </label>
                     <Select
                       value={newTask.dueType}
-                      onValueChange={(value: DueType) => setNewTask({ ...newTask, dueType: value })}
+                      onValueChange={(value: DueType) =>
+                        setNewTask({ ...newTask, dueType: value })
+                      }
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="実行タイミングを選択" />
@@ -194,7 +239,9 @@ export function Checklist({ items, onToggleComplete, onAddItem, onDeleteItem }: 
                     <label className="text-sm font-medium">公開設定</label>
                     <Select
                       value={newTask.visibility}
-                      onValueChange={(value: Visibility) => setNewTask({ ...newTask, visibility: value })}
+                      onValueChange={(value: Visibility) =>
+                        setNewTask({ ...newTask, visibility: value })
+                      }
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="公開設定を選択" />
@@ -206,7 +253,9 @@ export function Checklist({ items, onToggleComplete, onAddItem, onDeleteItem }: 
                       </SelectContent>
                     </Select>
                   </div>
-                  <Button type="submit" className="w-full">追加</Button>
+                  <Button type="submit" className="w-full">
+                    追加
+                  </Button>
                 </form>
               </DialogContent>
             </Dialog>
@@ -220,14 +269,14 @@ export function Checklist({ items, onToggleComplete, onAddItem, onDeleteItem }: 
             <TabsContent value="week_before">
               <div className="space-y-4">
                 {items
-                  .filter(item => item.due_type === 'week_before') // dueType から due_type に変更
+                  .filter((item) => item.due_type === "week_before") // dueType から due_type に変更
                   .map(renderChecklistItem)}
               </div>
             </TabsContent>
             <TabsContent value="day_before">
               <div className="space-y-4">
                 {items
-                  .filter(item => item.due_type === 'day_before') // dueType から due_type に変更
+                  .filter((item) => item.due_type === "day_before") // dueType から due_type に変更
                   .map(renderChecklistItem)}
               </div>
             </TabsContent>
@@ -236,14 +285,18 @@ export function Checklist({ items, onToggleComplete, onAddItem, onDeleteItem }: 
           <div className="mt-12">
             <h3 className="text-2xl font-serif mb-6">みんなの進捗状況</h3>
             <div className="space-y-4">
-              {initialDisplayGuests.map(guest => (
+              {initialDisplayGuests.map((guest) => (
                 <Card key={guest.id}>
                   <CardContent className="flex justify-between items-center p-4">
                     <div>
                       <p className="font-medium">{guest.name}</p>
-                      <p className="text-sm text-muted-foreground">{guest.type}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {guest.type}
+                      </p>
                     </div>
-                    <div className="text-lg font-medium">{calculateProgress(guest.id)}</div>
+                    <div className="text-lg font-medium">
+                      {calculateProgress(guest.id)}
+                    </div>
                   </CardContent>
                 </Card>
               ))}
@@ -273,14 +326,18 @@ export function Checklist({ items, onToggleComplete, onAddItem, onDeleteItem }: 
                     </Button>
                   </CollapsibleTrigger>
                   <CollapsibleContent className="space-y-2">
-                    {remainingGuests.map(guest => (
+                    {remainingGuests.map((guest) => (
                       <Card key={guest.id}>
                         <CardContent className="flex justify-between items-center p-4">
                           <div>
                             <p className="font-medium">{guest.name}</p>
-                            <p className="text-sm text-muted-foreground">{guest.type}</p>
+                            <p className="text-sm text-muted-foreground">
+                              {guest.type}
+                            </p>
                           </div>
-                          <div className="text-lg font-medium">{calculateProgress(guest.id)}</div>
+                          <div className="text-lg font-medium">
+                            {calculateProgress(guest.id)}
+                          </div>
                         </CardContent>
                       </Card>
                     ))}
@@ -301,7 +358,10 @@ export function Checklist({ items, onToggleComplete, onAddItem, onDeleteItem }: 
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>
+            <Button
+              variant="outline"
+              onClick={() => setIsDeleteDialogOpen(false)}
+            >
               キャンセル
             </Button>
             <Button variant="destructive" onClick={handleDeleteConfirm}>

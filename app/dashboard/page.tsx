@@ -1,20 +1,14 @@
 "use client";
 
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter } from "next/navigation";
 import { Button } from '@/components/ui/button';
+import { useAuthCheck } from "@/hooks/use-auth-check";
 
 export default function DashboardPage() {
+  const user = useAuthCheck();
   const router = useRouter();
 
-  // TODO: ログイン状態のチェック
-  useEffect(() => {
-    // ログインしていない場合はログインページにリダイレクト
-    // const isLoggedIn = checkLoginStatus();
-    // if (!isLoggedIn) {
-    //   router.push('/login');
-    // }
-  }, [router]);
+  if (!user) return null;
 
   return (
     <div className="min-h-screen bg-[#f8f5f2] p-8">
@@ -33,8 +27,6 @@ export default function DashboardPage() {
               </p>
             </div>
           </Button>
-
-          {/* 他の機能は必要に応じて追加 */}
         </div>
       </div>
     </div>

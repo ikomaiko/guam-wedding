@@ -3,17 +3,35 @@
 import { motion } from "framer-motion";
 import { Plus, MapPin, ChevronDown, ChevronUp, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import { useState } from "react";
 import type { TimelineEvent, Family, Visibility } from "@/types/app";
 import { Card, CardContent } from "@/components/ui/card";
 
 interface TimelineProps {
   events: TimelineEvent[];
-  onAddEvent?: (event: Omit<TimelineEvent, 'id'>) => void;
+  onAddEvent?: (event: Omit<TimelineEvent, "id">) => void;
   onDeleteEvent?: (id: string) => void;
 }
 
@@ -21,14 +39,17 @@ export function Timeline({ events, onAddEvent, onDeleteEvent }: TimelineProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [eventToDelete, setEventToDelete] = useState<{ id: string; family: Family } | null>(null);
+  const [eventToDelete, setEventToDelete] = useState<{
+    id: string;
+    family: Family;
+  } | null>(null);
   const [newEvent, setNewEvent] = useState({
     date: "",
     time: "",
     title: "",
     location: "",
     family: "ikoma" as Family,
-    visibility: "public" as Visibility
+    visibility: "public" as Visibility,
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -41,9 +62,9 @@ export function Timeline({ events, onAddEvent, onDeleteEvent }: TimelineProps) {
       title: newEvent.title,
       location: newEvent.location,
       visibility: newEvent.visibility,
-      user_id: '1',
+      user_id: "1",
       family: newEvent.family,
-      created_at: new Date().toISOString()
+      created_at: new Date().toISOString(),
     });
 
     // フォームをリセット
@@ -53,13 +74,13 @@ export function Timeline({ events, onAddEvent, onDeleteEvent }: TimelineProps) {
       title: "",
       location: "",
       family: "ikoma",
-      visibility: "public"
+      visibility: "public",
     });
     setIsDialogOpen(false);
   };
 
   const handleDeleteClick = (id: string) => {
-    setEventToDelete({ id, family: 'ikoma' });
+    setEventToDelete({ id, family: "ikoma" });
     setIsDeleteDialogOpen(true);
   };
 
@@ -76,31 +97,32 @@ export function Timeline({ events, onAddEvent, onDeleteEvent }: TimelineProps) {
       <CardContent>
         <p>{event.title}</p>
         <p>{event.location}</p>
-        {event.user_id === '1' && onDeleteEvent && (
-          <Button onClick={() => handleDeleteClick(event.id)}>
-            削除
-          </Button>
+        {event.user_id === "1" && onDeleteEvent && (
+          <Button onClick={() => handleDeleteClick(event.id)}>削除</Button>
         )}
       </CardContent>
     </Card>
   );
 
   const renderTimelineEvents = (family: Family) => {
-    const currentUserId = '1';
-    
+    const currentUserId = "1";
+
     // フィルタリングロジックを修正
-    const familyEvents = events.filter(event => {
+    const familyEvents = events.filter((event) => {
       // user_idに基づいて家族を判定
-      const eventFamily = event.user_id === '1' ? 'ikoma' : 'onohara';
+      const eventFamily = event.user_id === "1" ? "ikoma" : "onohara";
       if (eventFamily !== family) return false;
-      
+
       // 表示制御
       switch (event.visibility) {
-        case 'public':
+        case "public":
           return true;
-        case 'family':
-          return event.user_id === currentUserId || ['1', '2'].includes(currentUserId);
-        case 'private':
+        case "family":
+          return (
+            event.user_id === currentUserId ||
+            ["1", "2"].includes(currentUserId)
+          );
+        case "private":
           return event.user_id === currentUserId;
         default:
           return false;
@@ -112,26 +134,28 @@ export function Timeline({ events, onAddEvent, onDeleteEvent }: TimelineProps) {
     return eventsToShow.map((event, index) => (
       <motion.div
         key={event.id}
-        className={`relative ${family === 'ikoma' ? 'pr-8 text-right' : 'pl-8'}`}
-        initial={{ opacity: 0, x: family === 'ikoma' ? -20 : 20 }}
+        className={`relative ${
+          family === "ikoma" ? "pr-8 text-right" : "pl-8"
+        }`}
+        initial={{ opacity: 0, x: family === "ikoma" ? -20 : 20 }}
         whileInView={{ opacity: 1, x: 0 }}
         viewport={{ once: true }}
         transition={{ delay: index * 0.2 }}
       >
         {/* ISO形式の日付を日本時間に変換して表示 */}
         <time className="text-sm text-muted-foreground">
-          {new Date(event.date).toLocaleString('ja-JP', {
-            year: 'numeric',
-            month: '2-digit',
-            day: '2-digit',
-            hour: '2-digit',
-            minute: '2-digit'
+          {new Date(event.date).toLocaleString("ja-JP", {
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit",
+            hour: "2-digit",
+            minute: "2-digit",
           })}
         </time>
         <div className="flex items-center gap-2 justify-between">
-          {family === 'ikoma' ? (
+          {family === "ikoma" ? (
             <>
-              {event.user_id === '1' && onDeleteEvent && (
+              {event.user_id === "1" && onDeleteEvent && (
                 <Button
                   variant="ghost"
                   size="sm"
@@ -146,7 +170,7 @@ export function Timeline({ events, onAddEvent, onDeleteEvent }: TimelineProps) {
           ) : (
             <>
               <h4 className="font-medium mt-1">{event.title}</h4>
-              {event.user_id === '1' && onDeleteEvent && (
+              {event.user_id === "1" && onDeleteEvent && (
                 <Button
                   variant="ghost"
                   size="sm"
@@ -159,8 +183,12 @@ export function Timeline({ events, onAddEvent, onDeleteEvent }: TimelineProps) {
             </>
           )}
         </div>
-        <div className={`flex items-center gap-1 text-muted-foreground ${family === 'ikoma' ? 'justify-end' : 'justify-start'}`}>
-          {family === 'ikoma' ? (
+        <div
+          className={`flex items-center gap-1 text-muted-foreground ${
+            family === "ikoma" ? "justify-end" : "justify-start"
+          }`}
+        >
+          {family === "ikoma" ? (
             <>
               {event.location}
               <MapPin className="h-4 w-4 text-[#722F37]" />
@@ -197,36 +225,44 @@ export function Timeline({ events, onAddEvent, onDeleteEvent }: TimelineProps) {
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <label className="text-sm font-medium">日付</label>
-                      <Input 
-                        type="date" 
+                      <Input
+                        type="date"
                         value={newEvent.date}
-                        onChange={(e) => setNewEvent({ ...newEvent, date: e.target.value })}
+                        onChange={(e) =>
+                          setNewEvent({ ...newEvent, date: e.target.value })
+                        }
                         required
                       />
                     </div>
                     <div className="space-y-2">
                       <label className="text-sm font-medium">時間</label>
-                      <Input 
-                        type="time" 
+                      <Input
+                        type="time"
                         value={newEvent.time}
-                        onChange={(e) => setNewEvent({ ...newEvent, time: e.target.value })}
+                        onChange={(e) =>
+                          setNewEvent({ ...newEvent, time: e.target.value })
+                        }
                         required
                       />
                     </div>
                   </div>
                   <div className="space-y-2">
                     <label className="text-sm font-medium">タイトル</label>
-                    <Input 
+                    <Input
                       value={newEvent.title}
-                      onChange={(e) => setNewEvent({ ...newEvent, title: e.target.value })}
+                      onChange={(e) =>
+                        setNewEvent({ ...newEvent, title: e.target.value })
+                      }
                       required
                     />
                   </div>
                   <div className="space-y-2">
                     <label className="text-sm font-medium">場所</label>
-                    <Input 
+                    <Input
                       value={newEvent.location}
-                      onChange={(e) => setNewEvent({ ...newEvent, location: e.target.value })}
+                      onChange={(e) =>
+                        setNewEvent({ ...newEvent, location: e.target.value })
+                      }
                       required
                     />
                   </div>
@@ -234,7 +270,9 @@ export function Timeline({ events, onAddEvent, onDeleteEvent }: TimelineProps) {
                     <label className="text-sm font-medium">家族</label>
                     <Select
                       value={newEvent.family}
-                      onValueChange={(value: Family) => setNewEvent({ ...newEvent, family: value })}
+                      onValueChange={(value: Family) =>
+                        setNewEvent({ ...newEvent, family: value })
+                      }
                       required
                     >
                       <SelectTrigger>
@@ -250,7 +288,9 @@ export function Timeline({ events, onAddEvent, onDeleteEvent }: TimelineProps) {
                     <label className="text-sm font-medium">公開設定</label>
                     <Select
                       value={newEvent.visibility}
-                      onValueChange={(value: Visibility) => setNewEvent({ ...newEvent, visibility: value })}
+                      onValueChange={(value: Visibility) =>
+                        setNewEvent({ ...newEvent, visibility: value })
+                      }
                       required
                     >
                       <SelectTrigger>
@@ -263,17 +303,19 @@ export function Timeline({ events, onAddEvent, onDeleteEvent }: TimelineProps) {
                       </SelectContent>
                     </Select>
                   </div>
-                  <Button type="submit" className="w-full">追加</Button>
+                  <Button type="submit" className="w-full">
+                    追加
+                  </Button>
                 </form>
               </DialogContent>
             </Dialog>
           </div>
-          
+
           <div className="relative grid grid-cols-2 gap-8">
             {/* 生駒家側 */}
             <div className="space-y-8">
               <h3 className="text-xl font-serif text-center mb-8">生駒家</h3>
-              {renderTimelineEvents('ikoma')}
+              {renderTimelineEvents("ikoma")}
             </div>
 
             {/* 中央の線 */}
@@ -282,7 +324,7 @@ export function Timeline({ events, onAddEvent, onDeleteEvent }: TimelineProps) {
             {/* 小野原家側 */}
             <div className="space-y-8">
               <h3 className="text-xl font-serif text-center mb-8">小野原家</h3>
-              {renderTimelineEvents('onohara')}
+              {renderTimelineEvents("onohara")}
             </div>
           </div>
 
@@ -291,7 +333,10 @@ export function Timeline({ events, onAddEvent, onDeleteEvent }: TimelineProps) {
             <div className="absolute left-1/2 transform -translate-x-1/2 w-full max-w-[200px] text-center mt-8">
               <Collapsible open={isExpanded} onOpenChange={setIsExpanded}>
                 <CollapsibleTrigger asChild>
-                  <Button variant="ghost" className="flex items-center gap-2 mx-auto">
+                  <Button
+                    variant="ghost"
+                    className="flex items-center gap-2 mx-auto"
+                  >
                     {isExpanded ? (
                       <>
                         <ChevronUp className="h-4 w-4" />
@@ -320,7 +365,10 @@ export function Timeline({ events, onAddEvent, onDeleteEvent }: TimelineProps) {
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>
+            <Button
+              variant="outline"
+              onClick={() => setIsDeleteDialogOpen(false)}
+            >
               キャンセル
             </Button>
             <Button variant="destructive" onClick={handleDeleteConfirm}>
