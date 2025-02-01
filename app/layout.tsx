@@ -26,7 +26,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "生駒家&小野原家 | 結婚式 in グアム",
     description:
-      "025年2月8日にグアムで行われる生駒家&小野原家の結婚式の特別サイトです。予定の確認や交流の場としてご利用ください。",
+      "2025年2月8日にグアムで行われる生駒家&小野原家の結婚式の特別サイトです。予定の確認や交流の場としてご利用ください。",
     images: ["/og-image.jpg"],
     locale: "ja_JP",
     type: "website",
