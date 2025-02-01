@@ -51,7 +51,7 @@ function PageContent() {
 
   return (
     <main className="relative pb-20">
-      <Hero scrollY={scrollY} />
+      <Hero />
       <WeddingDetails />
       <Guests />
       <Timeline
