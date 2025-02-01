@@ -46,50 +46,71 @@ export default function WelcomePage() {
       return;
     }
 
-    // Load existing profile and answers
-    const loadData = async () => {
-      if (isInitialized) return; // 既にデータを読み込んでいる場合はスキップ
+    // Check if user has already answered
+    const checkAnsweredStatus = async () => {
+      const { data } = await supabase
+        .from("guests")
+        .select("is_answered_qa")
+        .eq("id", user.id)
+        .single();
 
-      try {
-        // Load profile
-        const { data: profileData } = await supabase
-          .from("guest_profiles")
-          .select("avatar_url")
-          .eq("guest_id", user.id)
-          .single();
-
-        if (profileData?.avatar_url) {
-          setAvatarUrl(profileData.avatar_url);
-        }
-
-        // Load answers
-        const { data: qaData } = await supabase
-          .from("guest_qa")
-          .select("question_key, answer")
-          .eq("guest_id", user.id);
-
-        if (qaData) {
-          const loadedAnswers = qaData.reduce((acc, { question_key, answer }) => ({
-            ...acc,
-            [question_key]: answer,
-          }), {});
-          setAnswers(loadedAnswers);
-        }
-
-        setIsInitialized(true);
-      } catch (error) {
-        console.error("Error loading data:", error);
+      if (data?.is_answered_qa) {
+        router.push("/");
+        return;
       }
+
+      // Load existing profile and answers
+      const loadData = async () => {
+        if (isInitialized) return;
+
+        try {
+          // Load profile
+          const { data: profileData } = await supabase
+            .from("guest_profiles")
+            .select("avatar_url")
+            .eq("guest_id", user.id)
+            .single();
+
+          if (profileData?.avatar_url) {
+            setAvatarUrl(profileData.avatar_url);
+          }
+
+          // Load answers
+          const { data: qaData } = await supabase
+            .from("guest_qa")
+            .select("question_key, answer")
+            .eq("guest_id", user.id);
+
+          if (qaData) {
+            const loadedAnswers = qaData.reduce(
+              (acc, { question_key, answer }) => ({
+                ...acc,
+                [question_key]: answer,
+              }),
+              {}
+            );
+            setAnswers(loadedAnswers);
+          }
+
+          setIsInitialized(true);
+        } catch (error) {
+          console.error("Error loading data:", error);
+        }
+      };
+
+      loadData();
     };
 
-    loadData();
+    checkAnsweredStatus();
   }, [user, router, isInitialized]);
 
   const handleSave = async () => {
     if (!user || isLoading) return;
 
     // Check if at least one answer is provided
-    const hasAnswer = Object.values(answers).some(answer => answer?.trim() !== "");
+    const hasAnswer = Object.values(answers).some(
+      (answer) => answer?.trim() !== ""
+    );
     if (!hasAnswer) {
       toast({
         title: "エラー",
@@ -162,18 +183,16 @@ export default function WelcomePage() {
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle className="text-center text-xl">ようこそ！</DialogTitle>
+            <DialogTitle className="text-center text-xl">
+              ようこそ！
+            </DialogTitle>
           </DialogHeader>
           <div className="text-center space-y-4">
-            <p>
-              グアムまでお越しいただけること誠にありがとうございます。
-            </p>
+            <p>グアムまでお越しいただけること誠にありがとうございます。</p>
             <p>
               お互いのことがもっと知れるよう、ぜひこちらの質問にお答えください！
             </p>
-            <Button onClick={() => setIsModalOpen(false)}>
-              はじめる
-            </Button>
+            <Button onClick={() => setIsModalOpen(false)}>はじめる</Button>
           </div>
         </DialogContent>
       </Dialog>
@@ -184,8 +203,10 @@ export default function WelcomePage() {
           animate={{ opacity: 1, y: 0 }}
           className="space-y-8"
         >
-          <h1 className="text-3xl font-serif text-center mb-8">プロフィール入力</h1>
-          
+          <h1 className="text-3xl font-serif text-center mb-8">
+            プロフィール入力
+          </h1>
+
           <div className="bg-white rounded-lg p-8 shadow-sm">
             <div className="flex flex-col items-center gap-4">
               <div className="relative">
@@ -196,8 +217,8 @@ export default function WelcomePage() {
                   </AvatarFallback>
                 </Avatar>
                 <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2">
-                  <AvatarEditorDialog 
-                    userId={user?.id || ""} 
+                  <AvatarEditorDialog
+                    userId={user?.id || ""}
                     onSave={setAvatarUrl}
                   />
                 </div>
@@ -234,8 +255,8 @@ export default function WelcomePage() {
 
           <div className="fixed bottom-0 left-0 right-0 bg-white border-t p-4">
             <div className="max-w-2xl mx-auto">
-              <Button 
-                onClick={handleSave} 
+              <Button
+                onClick={handleSave}
                 size="lg"
                 disabled={isLoading}
                 className="w-full"
