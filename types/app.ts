@@ -29,7 +29,7 @@ export interface TimelineEvent {
   title: string;
   location: string;
   visibility: Visibility;
-  user_id: string;
+  created_by: string;
   side: GuestSide;
   created_at: string;
 }

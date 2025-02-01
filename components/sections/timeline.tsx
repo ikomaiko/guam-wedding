@@ -59,7 +59,7 @@ export function Timeline({ events, onAddEvent, onDeleteEvent }: TimelineProps) {
       title: newEvent.title,
       location: newEvent.location,
       visibility: newEvent.visibility,
-      user_id: user.id,
+      created_by: user.id,
       side: user.side,
     });
 
@@ -131,7 +131,7 @@ export function Timeline({ events, onAddEvent, onDeleteEvent }: TimelineProps) {
         >
           {side === "新郎側" ? (
             <>
-              {event.user_id === user?.id && onDeleteEvent && (
+              {event.created_by === user?.id && onDeleteEvent && (
                 <Button
                   variant="ghost"
                   size="sm"
@@ -146,7 +146,7 @@ export function Timeline({ events, onAddEvent, onDeleteEvent }: TimelineProps) {
           ) : (
             <>
               <h4 className="font-medium">{event.title}</h4>
-              {event.user_id === user?.id && onDeleteEvent && (
+              {event.created_by === user?.id && onDeleteEvent && (
                 <Button
                   variant="ghost"
                   size="sm"
