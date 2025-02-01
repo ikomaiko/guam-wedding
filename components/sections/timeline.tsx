@@ -46,9 +46,15 @@ export function Timeline({ events, onAddEvent, onDeleteEvent }: TimelineProps) {
 
   // イベントを日付でグループ化
   const groupedEvents = useMemo(() => {
-    const sorted = [...events].sort(
-      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
-    );
+    const sorted = [...events]
+      .filter((event) => {
+        if (!user) return false;
+        if (event.visibility === "public") return true;
+        if (event.visibility === "private") return event.created_by === user.id;
+        if (event.visibility === "family") return event.side === user.side;
+        return false;
+      })
+      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
     return sorted.reduce((groups, event) => {
       const date = new Date(event.date).toLocaleDateString("ja-JP", {
@@ -66,7 +72,7 @@ export function Timeline({ events, onAddEvent, onDeleteEvent }: TimelineProps) {
       groups[date][event.side].push(event);
       return groups;
     }, {} as Record<string, Record<"新郎側" | "新婦側", TimelineEvent[]>>);
-  }, [events]);
+  }, [events, user]);
 
   // 表示する日付を制限
   const displayDates = useMemo(() => {
