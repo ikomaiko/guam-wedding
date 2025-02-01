@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useState, memo } from "react";
+import { useEffect, useState, memo, useMemo } from "react";
 import { useParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { Plus } from "lucide-react";
-import { useForm } from "react-hook-form";
+import { useForm, UseFormRegister } from "react-hook-form";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -30,17 +30,16 @@ import { useAuth } from "@/contexts/auth-context";
 import { AvatarEditorDialog } from "@/components/avatar-editor";
 import { NavigationBar } from "@/components/navigation-bar";
 
-const QUESTIONS = [
-  { key: "location", label: "どこに住んでる？" },
-  { key: "favorite_food", label: "好きな食べ物は？" },
-  { key: "favorite_drink", label: "好きな飲み物は？" },
-  { key: "holiday_activity", label: "休みの日は何してる？" },
-  { key: "favorite_celebrity", label: "好きな芸能人は？" },
-  { key: "impression", label: "新郎（新婦）の印象は？" },
-  { key: "dream", label: "叶えたいことは？" },
-  { key: "memory", label: "一番の思い出は？" },
-  { key: "guam_plan", label: "グアムでしたいことは？" },
-];
+interface Question {
+  key: string;
+  label: string;
+  order_num: number;
+  subject?: string;
+  created_by?: {
+    id: string;
+    name: string;
+  };
+}
 
 interface GuestProfile {
   id: string;
@@ -57,7 +56,6 @@ interface GuestProfile {
   }[];
 }
 
-// QuestionFormコンポーネントの型と実装を更新
 const QuestionForm = memo(
   ({
     question,
@@ -65,20 +63,14 @@ const QuestionForm = memo(
     isEditing,
     defaultValue,
     onClick,
-    createdBy, // 追加
+    createdBy,
   }: {
-    question: {
-      key: string;
-      label: string;
-      subject?: string; // 追加
-      created_by?: string; // 追加
-      created_by_name?: string; // 追加
-    };
-    register: any;
+    question: Question;
+    register: UseFormRegister<any>; // 型を明示的に定義
     isEditing: boolean;
     defaultValue: string;
     onClick?: () => void;
-    createdBy?: string; // 追加
+    createdBy?: string;
   }) => (
     <Card className="cursor-pointer" onClick={onClick}>
       <CardContent className="p-6">
@@ -87,19 +79,22 @@ const QuestionForm = memo(
             {question.label}
             {question.subject === "public" && question.created_by && (
               <span className="text-sm text-muted-foreground ml-2">
-                by {question.created_by_name}
+                by {question.created_by.name}
               </span>
             )}
           </div>
         </div>
         {isEditing ? (
-          <Textarea
-            {...register(question.key)}
-            defaultValue={defaultValue}
-            placeholder="回答を入力"
-            className="mt-2"
-            onClick={(e) => e.stopPropagation()}
-          />
+          <div onClick={(e) => e.stopPropagation()}>
+            <Textarea
+              {...register(question.key, {
+                shouldUnregister: true, // コンポーネントがアンマウントされたときにフィールドを解除
+              })}
+              defaultValue={defaultValue}
+              placeholder="回答を入力"
+              className="mt-2"
+            />
+          </div>
         ) : (
           <div className="text-muted-foreground whitespace-pre-wrap">
             {defaultValue || "未回答"}
@@ -126,18 +121,24 @@ export default function GuestProfilePage() {
     answer: "",
     subject: "private" as "private" | "public",
   });
-  const [questions, setQuestions] = useState(QUESTIONS);
+  const [questions, setQuestions] = useState<Question[]>([]);
 
-  const { register, handleSubmit, reset } = useForm({
-    defaultValues: QUESTIONS.reduce(
-      (acc, q) => ({
-        ...acc,
-        [q.key]:
-          guest?.qa?.find((qa) => qa.question_key === q.key)?.answer || "",
-      }),
-      {}
-    ),
+  const methods = useForm({
+    mode: "onChange",
+    defaultValues: useMemo(() => {
+      if (!questions.length || !guest?.qa) return {};
+      return questions.reduce(
+        (acc, q) => ({
+          ...acc,
+          [q.key]:
+            guest?.qa?.find((qa) => qa.question_key === q.key)?.answer || "",
+        }),
+        {}
+      );
+    }, [questions, guest?.qa]),
   });
+
+  const { register, handleSubmit, reset } = methods;
 
   const isOwnProfile = user?.id === params.id;
 
@@ -145,80 +146,8 @@ export default function GuestProfilePage() {
     if (!params.id) return;
 
     try {
-      const [
-        guestResponse,
-        profileResponse,
-        qaResponse,
-        customQuestionsResponse,
-      ] = await Promise.all([
-        supabase
-          .from("guests")
-          .select("id, name, type, side")
-          .eq("id", params.id)
-          .single(),
-        supabase
-          .from("guest_profiles")
-          .select("*")
-          .eq("guest_id", params.id)
-          .maybeSingle(),
-        supabase
-          .from("guest_qa")
-          .select("question_key, answer")
-          .eq("guest_id", params.id),
-        supabase
-          .from("questions")
-          .select("*")
-          .or(`created_by.eq.${params.id},subject.eq.public`)
-          .order("order_num", { ascending: true }),
-      ]);
-
-      if (guestResponse.error) throw guestResponse.error;
-
-      const allQuestions = [
-        ...QUESTIONS,
-        ...(customQuestionsResponse.data || []).map((q) => ({
-          key: q.key,
-          label: q.label,
-        })),
-      ];
-
-      const guestProfile: GuestProfile = {
-        ...guestResponse.data,
-        profile: profileResponse.data || null,
-        qa: qaResponse.data || [],
-      };
-
-      setGuest(guestProfile);
-      reset(
-        qaResponse.data?.reduce(
-          (acc, qa) => ({
-            ...acc,
-            [qa.question_key]: qa.answer,
-          }),
-          {}
-        )
-      );
-
-      setQuestions(allQuestions);
-    } catch (error) {
-      console.error("Error fetching guest:", error);
-      toast({
-        title: "エラー",
-        description: "データの取得に失敗しました",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    const fetchData = async () => {
-      if (!params.id) return;
-
-      try {
-        // 基本情報の取得
-        const [guestResponse, profileResponse, qaResponse] = await Promise.all([
+      const [guestResponse, profileResponse, qaResponse, questionsResponse] =
+        await Promise.all([
           supabase
             .from("guests")
             .select("id, name, type, side")
@@ -233,67 +162,52 @@ export default function GuestProfilePage() {
             .from("guest_qa")
             .select("question_key, answer")
             .eq("guest_id", params.id),
-        ]);
-
-        if (guestResponse.error) throw guestResponse.error;
-
-        // カスタム質問の取得
-        const { data: customQuestionsData, error: questionsError } =
-          await supabase
+          supabase
             .from("questions")
             .select(
               `
             *,
-            creator:guests!created_by(name)
+            created_by:guests!created_by(id, name)
           `
             )
-            .or(`created_by.eq.${params.id},subject.eq.public`);
+            .or(`created_by.eq.${params.id},subject.eq.public`)
+            .order("order_num"),
+        ]);
 
-        if (questionsError) throw questionsError;
+      if (guestResponse.error) throw guestResponse.error;
 
-        // 全ての質問を結合
-        const allQuestions = [
-          ...QUESTIONS,
-          ...(customQuestionsData || []).map((q) => ({
-            key: q.key,
-            label: q.label,
-            subject: q.subject,
-            created_by: q.created_by,
-            created_by_name: q.creator?.name,
-          })),
-        ];
+      const guestProfile: GuestProfile = {
+        ...guestResponse.data,
+        profile: profileResponse.data || null,
+        qa: qaResponse.data || [],
+      };
 
-        const guestProfile: GuestProfile = {
-          ...guestResponse.data,
-          profile: profileResponse.data || null,
-          qa: qaResponse.data || [],
-        };
+      setGuest(guestProfile);
+      setQuestions(questionsResponse.data || []);
+      reset(
+        qaResponse.data?.reduce(
+          (acc, qa) => ({
+            ...acc,
+            [qa.question_key]: qa.answer,
+          }),
+          {}
+        )
+      );
+    } catch (error) {
+      console.error("Error fetching guest:", error);
+      toast({
+        title: "エラー",
+        description: "データの取得に失敗しました",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-        setGuest(guestProfile);
-        setQuestions(allQuestions);
-        reset(
-          qaResponse.data?.reduce(
-            (acc, qa) => ({
-              ...acc,
-              [qa.question_key]: qa.answer,
-            }),
-            {}
-          )
-        );
-      } catch (error) {
-        console.error("Error fetching data:", error);
-        toast({
-          title: "エラー",
-          description: "データの取得に失敗しました",
-          variant: "destructive",
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchData();
-  }, [params.id]);
+  useEffect(() => {
+    fetchGuest();
+  }, [params.id, reset]);
 
   const onSubmit = async (data: Record<string, string>) => {
     if (!guest || isSaving) return;

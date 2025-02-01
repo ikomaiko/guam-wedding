@@ -18,17 +18,11 @@ import { useAuth } from "@/contexts/auth-context";
 import { ProfileDrawer } from "@/components/profile-drawer";
 import { AvatarEditorDialog } from "@/components/avatar-editor";
 
-const QUESTIONS = [
-  { key: "location", label: "どこに住んでる？" },
-  { key: "favorite_food", label: "好きな食べ物は？" },
-  { key: "favorite_drink", label: "好きな飲み物は？" },
-  { key: "holiday_activity", label: "休みの日は何してる？" },
-  { key: "favorite_celebrity", label: "好きな芸能人は？" },
-  { key: "impression", label: "新郎（新婦）の印象は？" },
-  { key: "dream", label: "叶えたいことは？" },
-  { key: "memory", label: "一番の思い出は？" },
-  { key: "guam_plan", label: "グアムでしたいことは？" },
-];
+interface Question {
+  key: string;
+  label: string;
+  order_num: number;
+}
 
 export default function WelcomePage() {
   const router = useRouter();
@@ -39,12 +33,28 @@ export default function WelcomePage() {
   const [isLoading, setIsLoading] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
+  const [questions, setQuestions] = useState<Question[]>([]);
 
   useEffect(() => {
     if (!user) {
       router.push("/login");
       return;
     }
+
+    // Fetch questions
+    const fetchQuestions = async () => {
+      const { data: questionsData, error: questionsError } = await supabase
+        .from("questions")
+        .select("key, label, order_num")
+        .order("order_num");
+
+      if (questionsError) {
+        console.error("Error fetching questions:", questionsError);
+        return;
+      }
+
+      setQuestions(questionsData || []);
+    };
 
     // Check if user has already answered
     const checkAnsweredStatus = async () => {
@@ -101,6 +111,7 @@ export default function WelcomePage() {
       loadData();
     };
 
+    fetchQuestions();
     checkAnsweredStatus();
   }, [user, router, isInitialized]);
 
@@ -236,7 +247,7 @@ export default function WelcomePage() {
             <ProfileDrawer />
           </div>
 
-          {QUESTIONS.map((q) => (
+          {questions.map((q) => (
             <div key={q.key} className="bg-white rounded-lg p-6 shadow-sm">
               <label className="block font-medium mb-2">{q.label}</label>
               <Textarea

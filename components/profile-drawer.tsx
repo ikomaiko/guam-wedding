@@ -15,18 +15,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { supabase } from "@/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
 
-const QUESTIONS = [
-  { key: "location", label: "どこに住んでる？" },
-  { key: "favorite_food", label: "好きな食べ物は？" },
-  { key: "favorite_drink", label: "好きな飲み物は？" },
-  { key: "holiday_activity", label: "休みの日は何してる？" },
-  { key: "favorite_celebrity", label: "好きな芸能人は？" },
-  { key: "impression", label: "新郎（新婦）の印象は？" },
-  { key: "dream", label: "叶えたいことは？" },
-  { key: "memory", label: "一番の思い出は？" },
-  { key: "guam_plan", label: "グアムでしたいことは？" },
-];
-
 interface ProfileData {
   id: string;
   name: string;
@@ -41,18 +29,36 @@ interface ProfileData {
   }>;
 }
 
+interface Question {
+  key: string;
+  label: string;
+  order_num: number;
+}
+
 export function ProfileDrawer() {
   const [isOpen, setIsOpen] = useState(false);
   const [profiles, setProfiles] = useState<ProfileData[]>([]);
+  const [questions, setQuestions] = useState<Question[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
-  const fetchProfiles = async () => {
+  const fetchData = async () => {
     setIsLoading(true);
     try {
-      const { data, error } = await supabase
+      // Fetch questions
+      const { data: questionsData, error: questionsError } = await supabase
+        .from("questions")
+        .select("key, label, order_num")
+        .order("order_num");
+
+      if (questionsError) throw questionsError;
+      setQuestions(questionsData || []);
+
+      // Fetch profiles
+      const { data: profilesData, error: profilesError } = await supabase
         .from("guests")
-        .select(`
+        .select(
+          `
           id,
           name,
           type,
@@ -64,18 +70,17 @@ export function ProfileDrawer() {
             question_key,
             answer
           )
-        `)
+        `
+        )
         .in("type", ["新郎本人", "新婦本人"]);
 
-      if (error) throw error;
-      if (data) {
-        setProfiles(data);
-      }
+      if (profilesError) throw profilesError;
+      setProfiles(profilesData || []);
     } catch (error) {
-      console.error("Error fetching profiles:", error);
+      console.error("Error fetching data:", error);
       toast({
         title: "エラー",
-        description: "プロフィールの取得に失敗しました",
+        description: "データの取得に失敗しました",
         variant: "destructive",
       });
     } finally {
@@ -88,7 +93,10 @@ export function ProfileDrawer() {
   };
 
   const getAnswer = (profile: ProfileData, key: string) => {
-    return profile.guest_qa?.find((qa) => qa.question_key === key)?.answer || "未回答";
+    return (
+      profile.guest_qa?.find((qa) => qa.question_key === key)?.answer ||
+      "未回答"
+    );
   };
 
   const getAvatarUrl = (profile: ProfileData) => {
@@ -102,7 +110,7 @@ export function ProfileDrawer() {
           variant="outline"
           className="w-full"
           onClick={() => {
-            fetchProfiles();
+            fetchData();
             setIsOpen(true);
           }}
         >
@@ -112,7 +120,9 @@ export function ProfileDrawer() {
       <DrawerContent>
         <div className="mx-auto w-full max-w-sm">
           <DrawerHeader>
-            <DrawerTitle className="text-center">新郎新婦のプロフィール</DrawerTitle>
+            <DrawerTitle className="text-center">
+              新郎新婦のプロフィール
+            </DrawerTitle>
             <DrawerDescription className="text-center">
               お二人の回答をご覧ください
             </DrawerDescription>
@@ -132,14 +142,16 @@ export function ProfileDrawer() {
                         </AvatarFallback>
                       </Avatar>
                       <div>
-                        <div className="font-medium text-lg">{profile.name}</div>
+                        <div className="font-medium text-lg">
+                          {profile.name}
+                        </div>
                         <div className="text-sm text-muted-foreground">
                           {profile.side} / {profile.type}
                         </div>
                       </div>
                     </div>
                     <div className="space-y-4 border-t pt-4">
-                      {QUESTIONS.map((q) => (
+                      {questions.map((q) => (
                         <div key={q.key} className="space-y-1">
                           <div className="text-sm font-medium">{q.label}</div>
                           <div className="text-sm text-muted-foreground whitespace-pre-wrap">
