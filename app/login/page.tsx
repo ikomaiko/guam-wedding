@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { motion } from "framer-motion";
 import {
   Select,
@@ -15,14 +15,16 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useLoginSupabase } from "@/hooks/use-login-supabase";
 import { useAuth } from "@/contexts/auth-context";
+import { useAuthRedirect } from "@/hooks/use-auth-check";
 
 export default function LoginPage() {
   const router = useRouter();
-  const { user } = useAuth();
+  const pathname = usePathname();
+  const user = useAuthRedirect(); // useAuthRedirect フックを使用
   const { guests, formData, updateFormData, handleLogin } = useLoginSupabase();
 
   useEffect(() => {
-    if (user) {
+    if (user && pathname !== "/login") {
       router.push("/welcome");
     }
   }, [user, router]);
