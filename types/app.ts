@@ -60,4 +60,8 @@ export interface Guest {
   side: GuestSide;
   type: GuestType;
   createdAt?: string;
+  guest_profiles?: {
+    avatar_url: string | null;
+    location: string | null;
+  };
 }

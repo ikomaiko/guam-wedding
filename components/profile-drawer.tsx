@@ -20,9 +20,9 @@ interface ProfileData {
   name: string;
   type: string;
   side: string;
-  guest_profiles: Array<{
+  guest_profiles?: {
     avatar_url: string | null;
-  }>;
+  };
   guest_qa: Array<{
     question_key: string;
     answer: string;
@@ -75,6 +75,7 @@ export function ProfileDrawer() {
         .in("type", ["新郎本人", "新婦本人"]);
 
       if (profilesError) throw profilesError;
+      // @ts-ignore
       setProfiles(profilesData || []);
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -100,7 +101,7 @@ export function ProfileDrawer() {
   };
 
   const getAvatarUrl = (profile: ProfileData) => {
-    return profile.guest_profiles?.[0]?.avatar_url || undefined;
+    return profile.guest_profiles?.avatar_url || undefined;
   };
 
   return (
@@ -117,9 +118,9 @@ export function ProfileDrawer() {
           新郎新婦の回答を見る
         </Button>
       </DrawerTrigger>
-      <DrawerContent>
-        <div className="mx-auto w-full max-w-sm">
-          <DrawerHeader>
+      <DrawerContent className="fixed inset-x-0 bottom-0 h-[85vh]">
+        <div className="h-full flex flex-col">
+          <DrawerHeader className="flex-none">
             <DrawerTitle className="text-center">
               新郎新婦のプロフィール
             </DrawerTitle>
@@ -127,45 +128,47 @@ export function ProfileDrawer() {
               お二人の回答をご覧ください
             </DrawerDescription>
           </DrawerHeader>
-          <div className="p-4 pb-8">
-            {isLoading ? (
-              <div className="text-center py-4">読み込み中...</div>
-            ) : (
-              <div className="space-y-12">
-                {profiles.map((profile) => (
-                  <div key={profile.id} className="space-y-6">
-                    <div className="flex items-center gap-4">
-                      <Avatar className="h-16 w-16">
-                        <AvatarImage src={getAvatarUrl(profile)} />
-                        <AvatarFallback className="text-xl">
-                          {getInitials(profile.name)}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <div className="font-medium text-lg">
-                          {profile.name}
-                        </div>
-                        <div className="text-sm text-muted-foreground">
-                          {profile.side} / {profile.type}
-                        </div>
-                      </div>
-                    </div>
-                    <div className="space-y-4 border-t pt-4">
-                      {questions.map((q) => (
-                        <div key={q.key} className="space-y-1">
-                          <div className="text-sm font-medium">{q.label}</div>
-                          <div className="text-sm text-muted-foreground whitespace-pre-wrap">
-                            {getAnswer(profile, q.key)}
+          <div className="flex-1 overflow-y-auto px-4">
+            <div className="max-w-sm mx-auto">
+              {isLoading ? (
+                <div className="text-center py-4">読み込み中...</div>
+              ) : (
+                <div className="space-y-12 pb-4">
+                  {profiles.map((profile) => (
+                    <div key={profile.id} className="space-y-6">
+                      <div className="flex items-center gap-4">
+                        <Avatar className="h-16 w-16">
+                          <AvatarImage src={getAvatarUrl(profile)} />
+                          <AvatarFallback className="text-xl">
+                            {getInitials(profile.name)}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <div className="font-medium text-lg">
+                            {profile.name}
+                          </div>
+                          <div className="text-sm text-muted-foreground">
+                            {profile.side} / {profile.type}
                           </div>
                         </div>
-                      ))}
+                      </div>
+                      <div className="space-y-4 border-t pt-4">
+                        {questions.map((q) => (
+                          <div key={q.key} className="space-y-1">
+                            <div className="text-sm font-medium">{q.label}</div>
+                            <div className="text-sm text-muted-foreground whitespace-pre-wrap">
+                              {getAnswer(profile, q.key)}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                ))}
-              </div>
-            )}
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
-          <div className="p-4 text-center">
+          <div className="flex-none p-4 text-center border-t bg-background">
             <DrawerClose asChild>
               <Button variant="outline">閉じる</Button>
             </DrawerClose>
