@@ -12,11 +12,12 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/auth-context";
 import { ProfileDrawer } from "@/components/profile-drawer";
 import { AvatarEditorDialog } from "@/components/avatar-editor";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 interface Question {
   key: string;
@@ -27,7 +28,6 @@ interface Question {
 export default function WelcomePage() {
   const router = useRouter();
   const { user } = useAuth();
-  const { toast } = useToast();
   const [isModalOpen, setIsModalOpen] = useState(true);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(false);
@@ -122,12 +122,9 @@ export default function WelcomePage() {
     const hasAnswer = Object.values(answers).some(
       (answer) => answer?.trim() !== ""
     );
+
     if (!hasAnswer) {
-      toast({
-        title: "エラー",
-        description: "最低1つは回答してください",
-        variant: "destructive",
-      });
+      toast.error("少なくとも1つの質問に回答してください。");
       return;
     }
 
@@ -167,19 +164,10 @@ export default function WelcomePage() {
 
       if (updateError) throw updateError;
 
-      toast({
-        title: "保存完了",
-        description: "ありがとうございます！",
-      });
-
       router.push("/");
     } catch (error) {
       console.error("Error saving answers:", error);
-      toast({
-        title: "エラー",
-        description: "保存に失敗しました",
-        variant: "destructive",
-      });
+      toast.error("保存中にエラーが発生しました。");
     } finally {
       setIsLoading(false);
     }
@@ -278,6 +266,20 @@ export default function WelcomePage() {
           </div>
         </motion.div>
       </div>
+
+      <ToastContainer
+        position="top-center"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+        toastClassName="bg-red-500 text-white"
+      />
     </div>
   );
 }
