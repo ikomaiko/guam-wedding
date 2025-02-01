@@ -9,7 +9,7 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: "生駒家&小野原家 | 結婚式 in グアム",
   description:
-    "2024年5月にグアムで行われる生駒家&小野原家の結婚式の特別サイトです。ご出席予定の方はこちらからログインしてください。",
+    "2025年2月8日にグアムで行われる生駒家&小野原家の結婚式の特別サイトです。予定の確認や交流の場としてご利用ください。",
   icons: {
     icon: [
       {
@@ -26,7 +26,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "生駒家&小野原家 | 結婚式 in グアム",
     description:
-      "2024年5月にグアムで行われる生駒家&小野原家の結婚式の特別サイトです。",
+      "025年2月8日にグアムで行われる生駒家&小野原家の結婚式の特別サイトです。予定の確認や交流の場としてご利用ください。",
     images: ["/og-image.jpg"],
     locale: "ja_JP",
     type: "website",
@@ -35,7 +35,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "生駒家&小野原家 | 結婚式 in グアム",
     description:
-      "2024年5月にグアムで行われる生駒家&小野原家の結婚式の特別サイトです。",
+      "2025年2月8日にグアムで行われる生駒家&小野原家の結婚式の特別サイトです。予定の確認や交流の場としてご利用ください。",
     images: ["/og-image.jpg"],
   },
 };
