@@ -18,6 +18,11 @@ export const metadata: Metadata = {
       },
     ],
   },
+  viewport: {
+    width: "device-width",
+    initialScale: 1,
+    maximumScale: 1,
+  },
   openGraph: {
     title: "生駒家&小野原家 | 結婚式 in グアム",
     description:
@@ -42,12 +47,6 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ja">
-      <head>
-        <meta
-          name="viewport"
-          content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
-        />
-      </head>
       <body className={inter.className}>
         <AuthProvider>{children}</AuthProvider>
       </body>
