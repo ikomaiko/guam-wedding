@@ -98,12 +98,18 @@ export function WeddingDetails() {
                   </button>
                 </div>
               </div>
-              <div className="pt-6 border-t border-[#897640]/20 text-xs">
-                ・男性：履物はスニーカー可です。生駒家は革靴で参加予定です。
+              <div className="border-t border-[#897640]/20 text-xs text-left">
                 <br />
-                ・男性：ズボンは白かベージュでお願いします。
+                男性：
                 <br />
-                ・女性：履物自由です。生駒家はフォーマルめなサンダルで参加予定です。
+                履物はスニーカー可です。生駒家は革靴で参加予定です。
+                <br />
+                ズボンは白かベージュでお願いします。
+                <br />
+                <br />
+                女性：
+                <br />
+                履物自由です。生駒家はフォーマルめなサンダルで参加予定です。
               </div>
             </div>
           </motion.div>
