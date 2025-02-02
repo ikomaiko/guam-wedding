@@ -29,6 +29,7 @@ import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/auth-context";
 import { AvatarEditorDialog } from "@/components/avatar-editor";
 import { NavigationBar } from "@/components/navigation-bar";
+import { Navigation } from "@/components/navigation";
 
 interface Question {
   key: string;
@@ -495,7 +496,7 @@ export default function GuestProfilePage() {
           )}
         </form>
       </div>
-      <NavigationBar />
+      <Navigation />
     </div>
   );
 }

@@ -8,6 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/auth-context";
 import { NavigationBar } from "@/components/navigation-bar";
+import { Navigation } from "@/components/navigation";
 
 interface GuestWithProfile {
   id: string;
@@ -123,7 +124,7 @@ export default function GuestsPage() {
           ))}
         </div>
       </div>
-      {/* <NavigationBar /> */}
+      <Navigation />
     </div>
   );
 }
